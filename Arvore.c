@@ -1,97 +1,139 @@
-/* programa arv0300.c */ 
-#include<stdio.h> 
-#include<stdlib.h> 
-#include<string.h> 
+/* programa arv0300.c - Arvore binaria de busca */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-typedef struct stNo { 
-  int info; 
-  struct stNo *esq, *dir; 
-} tNo ; 
+#define TAM_LINHA 80
 
-tNo *cria_arvore( int ); 
-tNo *cria_no( ); 
-void pos_esq (tNo *, int ); 
-void pos_dir (tNo *, int ); 
+typedef struct stNo {
+  int info;
+  struct stNo *esq, *dir;
+} tNo;
 
-void main() { 
-  tNo *raiz, *p, *q; 
-  char linha[80], *numero; 
-  int num; 
+tNo *cria_arvore(int);
+tNo *cria_no(void);
+void pos_esq(tNo *, int);
+void pos_dir(tNo *, int);
+void libera_arvore(tNo *);
+void em_ordem(tNo *);
 
-  gets(linha); 
-  numero = strtok(linha, " "); /* pega o primeiro numero da lista */ 
-  num = atoi(numero); 
-  raiz = cria_arvore(num); /* insere na raiz */ 
-  numero = strtok(NULL, " "); 
-  while (numero) { 
-    q = raiz; p = raiz; 
-    printf("Li numero %d\n", num); /* le novo numero */ 
-    num = atoi(numero); 
-    while (num != p->info && q) { /* procura na arvore */ 
-      p = q; 
-      if (num < p->info) 
- q = p->esq;               /* passa para arvore esquerda */ 
-      else 
- q = p->dir;               /* passa para direita */ 
-    } 
-    if (num == p->info) 
-      printf("O numero %d ja existe na arvore.\n", num); 
-    else {  /* vou inserir o numero na arvore */ 
-      if (num < p->info) 
- pos_esq(p, num); 
-      else 
- pos_dir(p, num); 
-    } 
-    numero = strtok(NULL, " "); 
-  } /* fim do while (numero) */ 
-} 
+int main(void) {
+  tNo *raiz = NULL, *p, *q;
+  char linha[TAM_LINHA], *numero;
+  int num;
 
-tNo *cria_arvore (int x) { 
-  tNo *p; 
+  if (fgets(linha, sizeof(linha), stdin) == NULL)
+    return 1;
+  /* remove newline se existir */
+  linha[strcspn(linha, "\n")] = '\0';
 
-  p = cria_no (); 
-  if (p) { 
-    p->info = x; 
-    return p; 
-  } 
-  else { 
-    puts("Faltou espaco para alocar no."); 
-    exit(1); 
-  } 
-} 
+  numero = strtok(linha, " ");
+  if (numero == NULL) {
+    puts("Nenhum numero informado.");
+    return 0;
+  }
+  num = atoi(numero);
+  printf("Li numero %d\n", num);
+  raiz = cria_arvore(num);
+  if (raiz == NULL) {
+    puts("Faltou espaco para alocar no.");
+    return 1;
+  }
 
-tNo *cria_no() { 
-  tNo *p; 
+  numero = strtok(NULL, " ");
+  while (numero != NULL) {
+    q = raiz;
+    p = raiz;
+    num = atoi(numero);
+    printf("Li numero %d\n", num);
+    while (num != p->info && q != NULL) {
+      p = q;
+      if (num < p->info)
+        q = p->esq;
+      else
+        q = p->dir;
+    }
+    if (num == p->info)
+      printf("O numero %d ja existe na arvore.\n", num);
+    else {
+      if (num < p->info)
+        pos_esq(p, num);
+      else
+        pos_dir(p, num);
+    }
+    numero = strtok(NULL, " ");
+  }
 
-  if ((p = (tNo *) malloc(sizeof(tNo))) == NULL) 
-    return NULL; 
-  else { 
-    p->esq = NULL; p->dir = NULL; 
-    return p; 
-  } 
- } 
-  
+  printf("Arvore em ordem (ordem simetrica): ");
+  em_ordem(raiz);
+  putchar('\n');
 
-void pos_esq(tNo *p, int x) { 
-  tNo *q; 
+  libera_arvore(raiz);
+  return 0;
+}
 
-  if (p->esq) 
-    puts("Operacao de insercao a esquerda ilegal."); 
-  else { 
-    q = cria_arvore(x); 
-    p->esq = q; 
-  } 
-} 
-  
+tNo *cria_arvore(int x) {
+  tNo *p;
 
-void pos_dir(tNo *p, int x) { 
-  tNo *q; 
+  p = cria_no();
+  if (p != NULL) {
+    p->info = x;
+    return p;
+  }
+  return NULL;
+}
 
-  if (p->dir) 
-    puts("Operacao de insercao a direita ilegal."); 
-  else { 
-    q = cria_arvore(x); 
-    p->dir = q; 
-  } 
-} 
+tNo *cria_no(void) {
+  tNo *p;
 
+  p = malloc(sizeof(tNo));
+  if (p == NULL)
+    return NULL;
+  p->esq = NULL;
+  p->dir = NULL;
+  return p;
+}
+
+void pos_esq(tNo *p, int x) {
+  tNo *q;
+
+  if (p->esq != NULL)
+    puts("Operacao de insercao a esquerda ilegal.");
+  else {
+    q = cria_arvore(x);
+    if (q != NULL)
+      p->esq = q;
+    else
+      puts("Faltou espaco para alocar no.");
+  }
+}
+
+void pos_dir(tNo *p, int x) {
+  tNo *q;
+
+  if (p->dir != NULL)
+    puts("Operacao de insercao a direita ilegal.");
+  else {
+    q = cria_arvore(x);
+    if (q != NULL)
+      p->dir = q;
+    else
+      puts("Faltou espaco para alocar no.");
+  }
+}
+
+void libera_arvore(tNo *r) {
+  if (r == NULL)
+    return;
+  libera_arvore(r->esq);
+  libera_arvore(r->dir);
+  free(r);
+}
+
+void em_ordem(tNo *r) {
+  if (r == NULL)
+    return;
+  em_ordem(r->esq);
+  printf("%d ", r->info);
+  em_ordem(r->dir);
+}
