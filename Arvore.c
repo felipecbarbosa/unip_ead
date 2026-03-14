@@ -1,9 +1,17 @@
-/* programa arv0300.c - Arvore binaria de busca */
+/*
+ * programa arv0300.c - Arvore binaria de busca (ABB)
+ *
+ * Objetivo: le da entrada padrao uma linha com numeros inteiros separados
+ * por espaco, insere cada um numa ABB (evitando duplicatas) e informa quando
+ * o numero ja existe. Ao final, imprime a arvore em ordem (simetrica).
+ *
+ * Exemplo de uso: echo "5 3 7 3 1" | ./Arvore
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define TAM_LINHA 80
+#define MAX_LINHA 80
 
 typedef struct stNo {
   int info;
@@ -19,25 +27,25 @@ void em_ordem(tNo *);
 
 int main(void) {
   tNo *raiz = NULL, *p, *q;
-  char linha[TAM_LINHA], *numero;
+  char linha[MAX_LINHA], *numero;
   int num;
 
   if (fgets(linha, sizeof(linha), stdin) == NULL)
-    return 1;
+    return EXIT_FAILURE;
   /* remove newline se existir */
   linha[strcspn(linha, "\n")] = '\0';
 
   numero = strtok(linha, " ");
   if (numero == NULL) {
     puts("Nenhum numero informado.");
-    return 0;
+    return EXIT_SUCCESS;
   }
   num = atoi(numero);
   printf("Li numero %d\n", num);
   raiz = cria_arvore(num);
   if (raiz == NULL) {
     puts("Faltou espaco para alocar no.");
-    return 1;
+    return EXIT_FAILURE;
   }
 
   numero = strtok(NULL, " ");
@@ -69,7 +77,7 @@ int main(void) {
   putchar('\n');
 
   libera_arvore(raiz);
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 tNo *cria_arvore(int x) {
